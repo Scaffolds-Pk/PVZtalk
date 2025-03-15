@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时光记忆馆</title>
+    <style>
+        :root {
+            --bg-color: #F5F5F5;
+            --main-color: #2E86C1;
+            --accent-color: #FFD700;
+        }
+
+        body {
+            background: var(--bg-color);
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background: var(--main-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+        }
+
+        .memory-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            width: 45%;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .left-card {
+            left: 0;
+        }
+
+        .right-card {
+            left: 55%;
+        }
+
+        .media-preview {
+            height: 200px;
+            background: #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--main-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <button id="create-btn" class="floating-btn">+ 新建记忆</button>
+
+    <!-- 创建记忆模态框 -->
+    <div id="create-modal" class="modal">
+        <div class="modal-content">
+            <div class="step" data-step="1">
+                <h3>选择记忆载体</h3>
+                <input type="file" id="media-upload" accept="image/*,video/*,audio/*" multiple>
+                <div class="preview-grid"></div>
+            </div>
+            
+            <div class="step" data-step="2">
+                <h3>记录时光</h3>
+                <input type="datetime-local" id="memory-time">
+                <textarea placeholder="记忆描述..."></textarea>
+            </div>
+
+            <div class="step" data-step="3">
+                <h3>情感标记</h3>
+                <div class="emoji-selector">
+                    <button data-emoji="😊">开心</button>
+                    <button data-emoji="🥰">感动</button>
+                    <button data-emoji="🚀">成长</button>
+                </div>
+            </div>
+
+            <div class="step" data-step="4">
+                <h3>时间胶囊设置</h3>
+                <label>开启时间：<input type="datetime-local" id="capsule-time"></label>
+                <div class="capsule-options">
+                    <label><input type="checkbox" name="reminder"> 到期邮件提醒</label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="prev-step">上一步</button>
+                <button class="next-step">下一步</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 记忆数据存储
+        let memories = JSON.parse(localStorage.getItem('memories') || '[]');
+
+        // 分步表单逻辑
+        let currentStep = 1;
+        document.querySelector('#create-btn').addEventListener('click', () => {
+            document.getElementById('create-modal').style.display = 'block';
+        });
+
+        // 文件预览功能
+        document.getElementById('media-upload').addEventListener('change', function(e) {
+            const previewGrid = document.querySelector('.preview-grid');
+            previewGrid.innerHTML = '';
+            
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewGrid.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // 时间胶囊检测
+        setInterval(() => {
+            const capsules = JSON.parse(localStorage.getItem('timeCapsules') || '[]');
+            const now = new Date();
+            capsules.forEach((capsule, index) => {
+                if (new Date(capsule.time) <= now) {
+                    alert(`时间胶囊已开启：${capsule.title}`);
+                    capsules.splice(index, 1);
+                    localStorage.setItem('timeCapsules', JSON.stringify(capsules));
+                }
+            });
+        }, 86400000);
+
+        // 更新保存记忆功能
+        function saveMemory() {
+            const newMemory = {
+                id: Date.now(),
+                media: Array.from(document.getElementById('media-upload').files),
+                timestamp: document.getElementById('memory-time').value,
+                description: document.querySelector('textarea').value,
+                emojis: Array.from(document.querySelectorAll('[data-emoji].selected')).map(b => b.dataset.emoji)
+            };
+
+            memories.push(newMemory);
+            localStorage.setItem('memories', JSON.stringify(memories));
+            renderMemory(newMemory);
+        }
+
+        // 动态渲染记忆卡片
+        function renderMemory(memory) {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.innerHTML = `
+                <div class="media-preview"></div>
+                <h3>${new Date(memory.timestamp).toLocaleDateString()}</h3>
+                <p>${memory.description}</p>
+                <div class="tags">
+                    ${memory.emojis.map(e => `<span class="tag">${e}</span>`).join('')}
+                </div>
+            `;
+            document.querySelector('.timeline').appendChild(card);
+        }
+    </script>
+    <div class="timeline">
+        <!-- 示例记忆卡片 -->
+        <div class="memory-card left-card">
+            <div class="media-preview"></div>
+            <h3>2023夏日旅行</h3>
+            <p>在青岛海边记录的日出时刻，海鸥掠过金色海面</p>
+            <div class="tags">
+                <span class="tag">旅行</span>
+                <span class="tag">自然</span>
+                <span class="tag">🌅</span>
+            </div>
+        </div>
+
+        <div class="memory-card right-card">
+            <div class="media-preview"></div>
+            <h3>毕业典礼</h3>
+            <p>与同学在操场抛学士帽的瞬间，背景是盛开的蓝花楹</p>
+            <div class="tags">
+                <span class="tag">成长</span>
+                <span class="tag">友情</span>
+                <span class="tag">🎓</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 基础交互逻辑
+        document.querySelectorAll('.memory-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.style.backgroundColor = '#f0f8ff';
+                setTimeout(() => {
+                    card.style.backgroundColor = 'white';
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

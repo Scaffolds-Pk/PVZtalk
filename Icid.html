@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PVZPersonのDynamics</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="main-box">
+    <h2 class="subtitle">Record every dynamics you make,SarVa_ollchis32 is this website's author</h2>
+    <h1 class="main-title">PVZPersonのDynamics</h1>
+</div>
+
+<div class="input-box">
+    <div class="input-container">
+        <input type="text" id="moment-input" placeholder="Share your dynamics...">
+        <input type="file" id="image-upload" accept="image/*" hidden multiple>
+        <button class="upload-btn" onclick="document.getElementById('image-upload').click()">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNCcgaGVpZ2h0PScyNCcgdmlld0JveD0nMCAwIDI0IDI0Jz48cGF0aCBmaWxsPScjZmZmZmZmJyBkPSdNMTEgMTZWNC4wODJMMTEuMDgzIDRIMTMuOTE3TDEzLjkyIDRMMTQgNC4wODJWMTRIMjB2MS40MTdMMTkuOTE4IDE2SDE0djZIMTB2LTZINFYxNWg2di0xSDR2LTEuNDE3TDMuOTE4IDEzSDlWNC4wODJMOSAxNFYxNmgydjEuNDE3TDExLjA4MiAxOUgxM3YtM2g2di0uOTE4TDE5IDE1LjA4MlYxM2gtOHYzeicvPjwvc3ZnPg==" alt="上传">
+        </button>
+        <button class="submit-btn" onclick="handleSubmit()" >
+            <span class="arrow">→</span>
+        </button>
+    </div>
+    <div class="time-display" id="time-display"></div>
+</div>
+
+<div id="moments-container"></div>
+
+<script src="./app.js"></script>
+</body>
+</html>
+
+<div class="moment-box">
+    <div class="user-info">
+        <img class="user-avatar" src="${user.avatar}">
+        <span class="user-nickname">${user.nickname}</span>
+    </div>
+    <div class="moment-content">
+        ${image ? `<img src="${image}" alt="上传的瞬间">` : ''}
+        <p>${text || ''}</p>
+    </div>
+    <div class="moment-footer">
+        <span class="moment-time">${momentData.time}</span>
+    </div>
+</div>
+
+<button class="edit-profile-btn" onclick="openProfileEditor()">
+    <div>Edit</div>
+</button>

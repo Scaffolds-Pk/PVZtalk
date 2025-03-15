@@ -88,9 +88,11 @@ function createMomentBox(text, images) {
 
   const momentData = {
     userId: user.id,
+    nickname: user.nickname,
+    avatar: user.avatar,
     text: text || '',
     images: images || [],
-    time: new Date().toLocaleString(),
+    time: new Date().toISOString(),
     timestamp: timestamp
   };
 
@@ -127,13 +129,12 @@ function loadMoments() {
   const container = document.getElementById('moments-container');
 
   moments.forEach(moment => {
-    const user = JSON.parse(localStorage.getItem('userInfo'));
     const momentDiv = document.createElement('div');
     momentDiv.className = 'moment-box';
     momentDiv.innerHTML = `
             <div class="user-info">
-                <img class="user-avatar" src="${user.avatar}">
-                <span class="user-nickname">${user.nickname}</span>
+                <img class="user-avatar" src="${moment.avatar}">
+                <span class="user-nickname">${moment.nickname}</span>
             </div>
             <div class="moment-content">
                 ${moment.images ? moment.images.map(img => `<img src="${img}" alt="上传的瞬间">`).join('') : ''}
@@ -251,7 +252,8 @@ window.onload = function () {
   if(momentParam) {
     try {
       const momentData = JSON.parse(atob(decodeURIComponent(momentParam)));
-      createMomentBox(momentData.text, momentData.images);
+      momentData.time = new Date(momentData.time).toLocaleString();
+      createMomentBox(momentData.text, momentData.images, momentData);
     } catch(e) {
       console.error('动态参数解析失败:', e);
     }

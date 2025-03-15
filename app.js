@@ -46,6 +46,19 @@ function handleSubmit() {
   const imageData = localStorage.getItem('uploadedImages');
   const images = imageData ? JSON.parse(imageData) : [];
 
+  // 生成分享链接
+  if(textInput.value || images.length > 0) {
+    const shareData = {
+      text: textInput.value,
+      images: images
+    };
+    const base64Data = btoa(JSON.stringify(shareData));
+    const shareUrl = window.location.href.split('?')[0] + '?moment=' + encodeURIComponent(base64Data);
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('分享链接已复制到剪贴板！');
+    });
+  }
+
   if (textInput.value || images.length > 0) {
     createMomentBox(textInput.value, images);
     textInput.value = '';
@@ -174,16 +187,16 @@ function openProfileEditor() {
   const user = JSON.parse(localStorage.getItem('userInfo'));
   container.innerHTML = `
       <div class="profile-editor">
-        <h3>Edit Profile</h3>
+        <h3>编辑个人资料</h3>
         <div class="avatar-upload">
           <img src="${user.avatar}" id="preview-avatar" style="width:80px;height:80px;border-radius:50%">
           <input type="file" id="avatar-upload" accept="image/*">
         </div>
         <input type="text" id="edit-nickname" value="${user.nickname}" 
-          style="display:block;width:100%;margin:10px 0;padding:8px;border-radius: 20px">
+          style="display:block;width:100%;margin:10px 0;padding:8px">
         <button onclick="saveProfile()" 
-          style="background:#007bff;color:white;border:none;padding:8px 16px;border-radius:4px;cursor: pointer">
-          Save
+          style="background:#007bff;color:white;border:none;padding:8px 16px;border-radius:4px">
+          保存修改
         </button>
       </div>
     `;
@@ -232,10 +245,22 @@ function saveProfile() {
 
 // 在window.onload中添加初始化和事件监听
 window.onload = function () {
+  // 加载URL参数中的动态
+  const urlParams = new URLSearchParams(window.location.search);
+  const momentParam = urlParams.get('moment');
+  if(momentParam) {
+    try {
+      const momentData = JSON.parse(atob(decodeURIComponent(momentParam)));
+      createMomentBox(momentData.text, momentData.images);
+    } catch(e) {
+      console.error('动态参数解析失败:', e);
+    }
+  }
+
   initUser();
   loadMoments();
   updateTime();
   setInterval(updateTime, 1000);
   document.getElementById('image-upload').addEventListener('change', handleImageUpload);
-  document.getElementById('submit-button').addEventListener('click', handleSubmit); // 假设提交按钮的id为submit-button
+  document.getElementById('submit-button').addEventListener('click', handleSubmit);
 }
